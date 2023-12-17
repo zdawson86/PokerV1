@@ -17,6 +17,27 @@ const int NOT_VALID = 0;
 const int NORMAL_MODE = 0;
 const int TEST_MODE = 1;
 
+// Prompt the user for an action (check, bet, or fold)
+action getAction() {
+    int a;
+    int userInput = NOT_VALID;
+    while (userInput == NOT_VALID) {
+        cout << endl << "What would you like to do?" << endl;
+        cout << "Enter '" << check <<"' to check" << endl;
+        cout << "Enter '" << bet <<"' to place a bet" << endl;
+        cout << "Enter '" << fold <<"' to fold" << endl;
+        cin >> a;
+        if ((a == check) || (a == bet) || (a == fold)) {
+            userInput = VALID;
+        }
+        else {
+            cout << "NOT A VALID ENTRY!" << endl << endl;
+        }
+    }
+
+    return static_cast<action>(a);
+}
+
 int main() {
     // SET "mode" TO "TEST_MODE" FOR TESTING CUSTOM HANDS (NOT RANDOM)
     // SET "mode" TO "NORMAL_MODE" FOR RUNNING A STANDARD GAME WITH RANDOMLY GENERATED HANDS
@@ -89,27 +110,47 @@ int main() {
                 cardStacks = moveCard(mainDeck, playerHand[i], 0, PLAYER_CARD_COUNT);
                 playerHand[i] = cardStacks[1];
                 mainDeck = cardStacks[0];
+                // DEBUG MESSAGES
                 cout << endl << "Player " << i + 1 << " hand:" << endl;
                 printDeck(playerHand[i], PLAYER_CARD_COUNT);
             }
+            // DEBUG MESSAGES
             cout << "Leftover cards in main deck:" << endl;
             printDeck(mainDeck, 10);
         }
-        cout << "Enter a number to resume" << endl;
-        cin >> testvar;
-/*
+        // DEBUG MESSAGES
+        //cout << endl << "Enter a number to resume" << endl;
+        //cin >> testvar;
+
+        // Print the hand for player1
+        cout << endl << "Your hand:" << endl;
+        printDeck(playerHand[0], PLAYER_CARD_COUNT);
+        currentHandType = findHandType(playerHand[0]);
+        PrintHandType(currentHandType);
+        cout << endl;
+        currentStrength = findHandStrength(playerHand[0], currentHandType);
+        cout << "Strength (high to low) = " << currentStrength.p1 << " " << currentStrength.p2 << " " << currentStrength.p3 << " " << currentStrength.p4 << " " << currentStrength.p5 << endl << endl;
+
+        // Prompt the user for an action (check, bet, or fold)
+        currentAction = getAction();
+
+        // If user folds, game continues and user will start the next hand
+        if (currentAction == fold) {
+            continue;
+        }
+
         // Show player 1's cards
         // Print the hand for player1
         printf("\nPlayer 1 hand:\n");
-        PrintHand(player1, numberOfCards);
-        currentHandType = FindHandType(player1, numberOfCards);
+        printDeck(playerHand[0], PLAYER_CARD_COUNT);
+        currentHandType = findHandType(playerHand[0]);
         PrintHandType(currentHandType);
-        printf("\n");
-        currentStrength = FindHandStrength(player1, currentHandType, numberOfCards);
+        cout << endl;
+        currentStrength = findHandStrength(playerHand[0], currentHandType);
         printf("Strength (high to low) = %d %d %d %d %d \n\n", currentStrength.p1, currentStrength.p2, currentStrength.p3, currentStrength.p4, currentStrength.p5);
 
         // Prompt the user for an action (check, bet, or fold)
-        getAction(&currentAction);
+        currentAction = getAction();
 
         // If user folds, game continues and user will start the next hand
         if (currentAction == fold) {
@@ -118,110 +159,111 @@ int main() {
 
         // Print the hand for player2
         printf("\nPlayer 2 hand:\n");
-        PrintHand(player2, numberOfCards);
-        currentHandType = FindHandType(player2, numberOfCards);
+        printDeck(playerHand[1], PLAYER_CARD_COUNT);
+        currentHandType = findHandType(playerHand[1]);
         PrintHandType(currentHandType);
         printf("\n");
-        currentStrength = FindHandStrength(player2, currentHandType, numberOfCards);
+        currentStrength = findHandStrength(playerHand[1], currentHandType);
         printf("Strength (high to low) = %d %d %d %d %d \n\n", currentStrength.p1, currentStrength.p2, currentStrength.p3, currentStrength.p4, currentStrength.p5);
 
         // Print the hand for player3
-        if (numberOfPlayers >= 3) {
+        if (playerHand.size() >= 3) {
             printf("Player 3 hand:\n");
-            PrintHand(player3, numberOfCards);
-            currentHandType = FindHandType(player3, numberOfCards);
+            printDeck(playerHand[2], PLAYER_CARD_COUNT);
+            currentHandType = findHandType(playerHand[2]);
             PrintHandType(currentHandType);
             printf("\n");
-            currentStrength = FindHandStrength(player3, currentHandType, numberOfCards);
+            currentStrength = findHandStrength(playerHand[2], currentHandType);
             printf("Strength (high to low) = %d %d %d %d %d \n\n", currentStrength.p1, currentStrength.p2, currentStrength.p3, currentStrength.p4, currentStrength.p5);
         }
         
         // Print the hand for player4
-        if (numberOfPlayers >= 4) {
+        if (playerHand.size() >= 4) {
             printf("Player 4 hand:\n");
-            PrintHand(player4, numberOfCards);
-            currentHandType = FindHandType(player4, numberOfCards);
+            printDeck(playerHand[3], PLAYER_CARD_COUNT);
+            currentHandType = findHandType(playerHand[3]);
             PrintHandType(currentHandType);
             printf("\n");
-            currentStrength = FindHandStrength(player4, currentHandType, numberOfCards);
+            currentStrength = findHandStrength(playerHand[3], currentHandType);
             printf("Strength (high to low) = %d %d %d %d %d \n\n", currentStrength.p1, currentStrength.p2, currentStrength.p3, currentStrength.p4, currentStrength.p5);
         }
         
         // Print the hand for player5
-        if (numberOfPlayers >= 5) {
+        if (playerHand.size() >= 5) {
             printf("Player 5 hand:\n");
-            PrintHand(player5, numberOfCards);
-            currentHandType = FindHandType(player5, numberOfCards);
+            printDeck(playerHand[4], PLAYER_CARD_COUNT);
+            currentHandType = findHandType(playerHand[4]);
             PrintHandType(currentHandType);
             printf("\n");
-            currentStrength = FindHandStrength(player5, currentHandType, numberOfCards);
+            currentStrength = findHandStrength(playerHand[4], currentHandType);
             printf("Strength (high to low) = %d %d %d %d %d \n\n", currentStrength.p1, currentStrength.p2, currentStrength.p3, currentStrength.p4, currentStrength.p5);
         }
         
         // Print the hand for player6
-        if (numberOfPlayers >= 6) {
+        if (playerHand.size() >= 6) {
             printf("Player 6 hand:\n");
-            PrintHand(player6, numberOfCards);
-            currentHandType = FindHandType(player6, numberOfCards);
+            printDeck(playerHand[5], PLAYER_CARD_COUNT);
+            currentHandType = findHandType(playerHand[5]);
             PrintHandType(currentHandType);
             printf("\n");
-            currentStrength = FindHandStrength(player6, currentHandType, numberOfCards);
+            currentStrength = findHandStrength(playerHand[5], currentHandType);
             printf("Strength (high to low) = %d %d %d %d %d \n\n", currentStrength.p1, currentStrength.p2, currentStrength.p3, currentStrength.p4, currentStrength.p5);
         }
 
         // Print the hand for player7
-        if (numberOfPlayers >= 7) {
+        if (playerHand.size() >= 7) {
             printf("Player 7 hand:\n");
-            PrintHand(player7, numberOfCards);
-            currentHandType = FindHandType(player7, numberOfCards);
+            printDeck(playerHand[6], PLAYER_CARD_COUNT);
+            currentHandType = findHandType(playerHand[6]);
             PrintHandType(currentHandType);
             printf("\n");
-            currentStrength = FindHandStrength(player7, currentHandType, numberOfCards);
+            currentStrength = findHandStrength(playerHand[6], currentHandType);
             printf("Strength (high to low) = %d %d %d %d %d \n\n", currentStrength.p1, currentStrength.p2, currentStrength.p3, currentStrength.p4, currentStrength.p5);
         }
 
         // Print the hand for player8
-        if (numberOfPlayers >= 8) {
+        if (playerHand.size() >= 8) {
             printf("Player 8 hand:\n");
-            PrintHand(player8, numberOfCards);
-            currentHandType = FindHandType(player8, numberOfCards);
+            printDeck(playerHand[7], PLAYER_CARD_COUNT);
+            currentHandType = findHandType(playerHand[7]);
             PrintHandType(currentHandType);
             printf("\n");
-            currentStrength = FindHandStrength(player8, currentHandType, numberOfCards);
+            currentStrength = findHandStrength(playerHand[7], currentHandType);
             printf("Strength (high to low) = %d %d %d %d %d \n\n", currentStrength.p1, currentStrength.p2, currentStrength.p3, currentStrength.p4, currentStrength.p5);
         }
 
         // Print the hand for player9
-        if (numberOfPlayers >= 9) {
+        if (playerHand.size() >= 9) {
             printf("Player 9 hand:\n");
-            PrintHand(player9, numberOfCards);
-            currentHandType = FindHandType(player9, numberOfCards);
+            printDeck(playerHand[8], PLAYER_CARD_COUNT);
+            currentHandType = findHandType(playerHand[8]);
             PrintHandType(currentHandType);
             printf("\n");
-            currentStrength = FindHandStrength(player9, currentHandType, numberOfCards);
+            currentStrength = findHandStrength(playerHand[8], currentHandType);
             printf("Strength (high to low) = %d %d %d %d %d \n\n", currentStrength.p1, currentStrength.p2, currentStrength.p3, currentStrength.p4, currentStrength.p5);
         }
 
         // Print the hand for player10
-        if (numberOfPlayers >= 10) {
+        if (playerHand.size() >= 10) {
             printf("Player 10 hand:\n");
-            PrintHand(player10, numberOfCards);
-            currentHandType = FindHandType(player10, numberOfCards);
+            printDeck(playerHand[9], PLAYER_CARD_COUNT);
+            currentHandType = findHandType(playerHand[9]);
             PrintHandType(currentHandType);
             printf("\n");
-            currentStrength = FindHandStrength(player10, currentHandType, numberOfCards);
+            currentStrength = findHandStrength(playerHand[9], currentHandType);
             printf("Strength (high to low) = %d %d %d %d %d \n\n", currentStrength.p1, currentStrength.p2, currentStrength.p3, currentStrength.p4, currentStrength.p5);
         }
-
+        
         // Determine who has the best hand out of all of the players
-        DetermineWinner(numberOfPlayers, numberOfCards);
+        cout << "GOT HERE 0";  // DEBUG TEST
+        determineWinner(playerHand);
 
         // Print all of the cards in play
         //printf("Cards in play:\n");
         //for (i = 0; i < (numberOfCards * numberOfPlayers); i++) {
         //    PrintCard(cardsInPlay[i]);
         //}
-*/
+
         }  // END OF WHILE(1) LOOP
 
     return 0;

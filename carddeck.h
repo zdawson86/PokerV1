@@ -12,7 +12,7 @@ This sets up a deck of cards to be used for various card games.
 #include <array>
 using namespace std;
 
-typedef enum pips{two, three, four, five, six, seven, eight, nine, ten, jack, queen, king, ace, jokerpips} pips;
+typedef enum pips{acelow, two, three, four, five, six, seven, eight, nine, ten, jack, queen, king, ace, jokerpips} pips;
 typedef enum suit{club, diamond, heart, spade, jokersuit} suit;
 typedef struct card{pips p; suit s;} card;
 typedef enum deckType{singleDeck, doubleDeck, euchreDeck} deckType;
@@ -295,9 +295,11 @@ void TESTprintDeck() {
 }
 
 vector<card> shuffleDeck(vector<card> deck) {
-    auto rd = random_device {}; 
-    auto rng = default_random_engine { rd() };
-    shuffle(begin(deck), end(deck), rng);
+    //auto rd = random_device {}; 
+    //auto rng = default_random_engine { rd() };
+    //shuffle(begin(deck), end(deck), rng);
+    random_device rd;
+    shuffle(deck.begin(), deck.end(), rd);
     return deck;
 }
 

@@ -18,6 +18,14 @@ typedef struct strength{pips p1; pips p2; pips p3; pips p4; pips p5;} strength;
 typedef enum handtype{aceHighOrLess, singlePair, twoPair, threeOfKind, stdStraight, stdFlush, fullHouse, fourOfKind, straightFlush, royalFlush} handtype;
 typedef enum action{check, bet, fold} action;
 
+// Swap the values at 2 different pips addresses
+void swapPips(pips* xp, pips* yp)
+{
+	pips temp = *xp;
+	*xp = *yp;
+	*yp = temp;
+}
+
 // FOR DEBUGGING - Print the hand type to the screen in a readable format
 void PrintHandType(handtype ht)
 {
@@ -109,10 +117,10 @@ int determineStraight(vector<card> hand)
         straightDownPips[1] = hand[i].p - 2;
         straightDownPips[2] = hand[i].p - 3;
         straightDownPips[3] = hand[i].p - 4;
-        if (straightDownPips[3] == (two - 1)) {
+        if (straightDownPips[3] == acelow) {
             straightDownPips[3] = ace;  // Ace is low for a downward straight
         }
-        else if (straightDownPips[3] < (two - 1)) {
+        else if (straightDownPips[3] < acelow) {
             straightDownPossible = NOT_FOUND;
         }
         int straightDownPipsFound[4] = {NOT_FOUND, NOT_FOUND, NOT_FOUND, NOT_FOUND};
@@ -277,7 +285,7 @@ int determineRoyalFlush(vector<card> hand)
 }
 
 // Determine the type of hand that was dealt
-handtype FindHandType(vector<card> hand, int cardCount)
+handtype findHandType(vector<card> hand)
 {
     int result = NOT_FOUND;
 
@@ -338,4 +346,628 @@ handtype FindHandType(vector<card> hand, int cardCount)
     // At this point, assume the hand is an ace high or less
     return aceHighOrLess;
 
+}
+
+// Find the strength of a hand with ace high or less
+strength strengthAceHighOrLess(vector<card> hand)
+{
+    int i = 0;
+    vector<pips> pipsVector; 
+    strength cardStrength;
+    // Reset the pips array to all zeros
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    // Get pips values from the hand
+    for (i = 0; i < hand.size(); i++) {
+        pipsVector.push_back(hand[i].p);
+    }
+    // Sort the hand's pips values into the card strength struct (p1 strongest, p5 weakest)
+    sort(pipsVector.begin(), pipsVector.end(), greater<int>());
+    cardStrength.p1 = pipsVector[0];
+    cardStrength.p2 = pipsVector[1];
+    cardStrength.p3 = pipsVector[2];
+    cardStrength.p4 = pipsVector[3];
+    cardStrength.p5 = pipsVector[4];
+
+    return cardStrength;
+}
+
+// Find the strength of a hand with a single pair
+strength strengthSinglePair(vector<card> hand)
+{
+    int i = 0, j = 0;
+    pips pairPips = acelow;
+    vector<pips> pipsVector;
+    strength cardStrength;
+    // Reset the pips vector to all zeros
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    // Get pips values from the hand
+    for (i = 0; i < hand.size(); i++) {
+        pipsVector.push_back(hand[i].p);
+    }
+    // Find the pair in the hand
+    for (i = 0; i < hand.size(); i++) {
+        for (j = i+1; j < hand.size(); j++) {
+            if (hand[i].p == hand[j].p) {
+                pairPips = hand[i].p;
+                break;
+            }
+        }
+    }
+    // Remove the pair pips from the pips vector
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    for (i = 0; i < hand.size(); i++) {
+        if (!(hand[i].p == pairPips)) {
+            pipsVector.push_back(hand[i].p);
+        }
+    }
+    // Sort the remaining pips values for the card strength struct
+    sort(pipsVector.begin(), pipsVector.end(), greater<int>());
+    cardStrength.p1 = pairPips;  // pips value for the pair
+    cardStrength.p2 = pipsVector[0];  // highest single pips
+    cardStrength.p3 = pipsVector[1];  // second highest single pips
+    cardStrength.p4 = pipsVector[2];  // lowest single pips
+    cardStrength.p5 = acelow;  // not used
+
+    return cardStrength;
+}
+
+// Find the strength of a hand with two pairs
+strength strengthTwoPair(vector<card> hand)
+{
+    int i = 0, j = 0, temp = 0;
+    pips pairPipsHigh = acelow, pairPipsLow = acelow, thirdPairPips = acelow, singlePips =acelow;
+    int firstPairFound = NOT_FOUND;
+    vector<pips> pipsVector;
+    strength cardStrength;
+    // Reset the pips array to all zeros
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    // Get pips values from the hand
+    for (i = 0; i < hand.size(); i++) {
+        pipsVector.push_back(hand[i].p);
+    }
+    // Find the 2 pairs in the hand
+    for (i = 0; i < hand.size(); i++) {
+        for (j = i+1; j < hand.size(); j++) {
+            if ((hand[i].p == hand[j].p) && (firstPairFound == FOUND)) {
+                pairPipsLow = hand[i].p;
+                break;
+            }
+            else if (hand[i].p == hand[j].p) {
+                pairPipsHigh = hand[i].p;
+                firstPairFound = FOUND;
+            }
+        }
+    }
+    // Check to see if there's a third pair (possible for 7 card hands)
+    for (i = 0; i < hand.size(); i++) {
+        for (j = i+1; j < hand.size(); j++) {
+            if ((hand[i].p == hand[j].p) && (!(hand[i].p == pairPipsHigh)) && (!(hand[i].p == pairPipsLow))) {
+                thirdPairPips = hand[i].p;
+                break;
+            }
+        }
+    }
+    // If there are three pairs, check if the third pair is bigger than either of the other two pairs
+    if (thirdPairPips > pairPipsHigh) {
+        pairPipsHigh = thirdPairPips;
+    }
+    else if (thirdPairPips > pairPipsLow) {
+        pairPipsLow = thirdPairPips;
+    }
+    // Find the highest single card pips by sorting the remaining cards
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    for (i = 0; i < hand.size(); i++) {
+        if ((!(hand[i].p == pairPipsHigh)) && (!(hand[i].p == pairPipsLow))) {
+            pipsVector.push_back(hand[i].p);
+        }   
+    }
+    sort(pipsVector.begin(), pipsVector.end(), greater<int>());
+    // Check if the "high" pips value is actually higher than the "low" pips value
+    // If not, swap them
+    if (pairPipsHigh < pairPipsLow) {
+        swapPips(&pairPipsHigh, &pairPipsLow);
+    }
+    // Assign the pips values to the card strength struct
+    cardStrength.p1 = pairPipsHigh;  // high pair pips
+    cardStrength.p2 = pairPipsLow;  // low pair pips
+    cardStrength.p3 = pipsVector[0];  // single pips
+    cardStrength.p4 = acelow;  // not used
+    cardStrength.p5 = acelow;  // not used
+    
+    return cardStrength;
+}
+
+// Find the strength of a hand with three of a kind
+strength strengthThreeOfKind(vector<card> hand)
+{
+    int i = 0, j = 0, threeOfKindTracker = 0;
+    pips threeOfKindPips = acelow;
+    vector<pips> pipsVector;
+    strength cardStrength;
+    // Reset the pips array to all zeros
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    // Get pips values from the hand
+    for (i = 0; i < hand.size(); i++) {
+        pipsVector.push_back(hand[i].p);
+    }
+    // Find the three of a kind pips value in the hand
+    for (i = 0; i < hand.size(); i++) {
+        threeOfKindTracker = 0;
+        for (j = i+1; j < hand.size(); j++) {
+            if ((hand[i].p == hand[j].p) && threeOfKindTracker == 1) {
+                threeOfKindPips = hand[i].p;
+            }
+            else if (hand[i].p == hand[j].p) {
+                threeOfKindTracker = 1;
+            }
+        }
+    }
+    // Remove the three of a kind pips from the pips array
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    for (i = 0; i < hand.size(); i++) {
+        if (!(hand[i].p == threeOfKindPips)) {
+            pipsVector.push_back(hand[i].p);
+        }   
+    }
+    // Sort the remaining pips values for the card strength struct
+    sort(pipsVector.begin(), pipsVector.end(), greater<int>());
+    cardStrength.p1 = threeOfKindPips;  // pips value for the three of a kind
+    cardStrength.p2 = pipsVector[0];  // highest single pips
+    cardStrength.p3 = pipsVector[1];  // lowest single pips
+    cardStrength.p4 = acelow;  // not used
+    cardStrength.p5 = acelow;  // not used
+    
+    return cardStrength;
+}
+
+// Find the strength of a hand with a straight
+strength strengthStraight(vector<card> hand)
+{
+    int i = 0;
+    vector<pips> pipsVector;
+    int fiveFound = NOT_FOUND, aceFound = NOT_FOUND;
+    pips straightPipsHigh = acelow; 
+    strength cardStrength;
+    // Reset the pips array to all zeros
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    // Get pips values from the hand
+    for (i = 0; i < hand.size(); i++) {
+        pipsVector.push_back(hand[i].p);
+        // If both a five and ace are found, convert the ace pips value to be low instead of high
+        if (pipsVector[i] == five) {
+            fiveFound = FOUND;
+        }
+        else if (pipsVector[i] == ace) {
+            aceFound = FOUND;
+        }
+        if ((fiveFound == FOUND) && (aceFound == FOUND)) {
+            for (i = 0; i < hand.size(); i++) {
+                if (pipsVector[i] == ace) {
+                    pipsVector[i] = acelow;  // ace is low for this particular straight
+                    break;
+                }
+            }
+        }
+    }
+    // Sort the pips values and determine if either of the top two pips values are part of the straight (applicable for 7 card hands)
+    // Should only need to check the next two pips values directly below the pips value being checked to verify the straight
+    sort(pipsVector.begin(), pipsVector.end(), greater<int>());
+    if ((pipsVector[1] == (pipsVector[0]-1))
+    && (pipsVector[2] == (pipsVector[0]-2))) {
+        straightPipsHigh = pipsVector[0];
+    }
+    else if ((pipsVector[2] == (pipsVector[1]-1))
+    && (pipsVector[3] == (pipsVector[1]-2))) {
+        straightPipsHigh = pipsVector[1];
+    }
+    else {
+        straightPipsHigh = pipsVector[2];
+    }
+    // Assign the hand's pips values into the card strength struct (p1 strongest, p5 weakest)
+    cardStrength.p1 = straightPipsHigh;  // highest pips value of the straight
+    cardStrength.p2 = acelow;  // not used
+    cardStrength.p3 = acelow;  // not used
+    cardStrength.p4 = acelow;  // not used
+    cardStrength.p5 = acelow;  // not used
+    
+    return cardStrength;
+}
+
+// Find the strength of a hand with a flush
+strength strengthFlush(vector<card> hand)
+{
+    int i = 0, j = 0; 
+    vector<pips> pipsVector;
+    int flushTracker = 0;
+    suit flushSuit;
+    strength cardStrength;
+    // Find the flush suit (5 cards of same suit)
+    for (i = 0; i < hand.size(); i++) {
+        flushTracker = 0;
+        for (j = i+1; j < hand.size(); j++) {
+            if ((hand[i].s == hand[j].s) && flushTracker == 3) {
+                flushSuit = hand[i].s;
+            }
+            else if ((hand[i].s == hand[j].s) && flushTracker == 2) {
+                flushTracker = 3;
+            }
+            else if ((hand[i].s == hand[j].s) && flushTracker == 1) {
+                flushTracker = 2;
+            }
+            else if ((hand[i].s == hand[j].s) && flushTracker == 0) {
+                flushTracker = 1;
+            }
+        }
+    }
+    // Reset the pips array to all zeros
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    // Get pips values from the hand for only the flush suit
+    for (i = 0; i < hand.size(); i++) {
+        if (hand[i].s == flushSuit) {
+            pipsVector.push_back(hand[i].p);
+        }
+    }
+    // Sort the hand's pips values into the card strength struct (p1 strongest, p5 weakest)
+    sort(pipsVector.begin(), pipsVector.end(), greater<int>());
+    cardStrength.p1 = pipsVector[0];
+    cardStrength.p2 = pipsVector[1];
+    cardStrength.p3 = pipsVector[2];
+    cardStrength.p4 = pipsVector[3];
+    cardStrength.p5 = pipsVector[4];
+    
+    return cardStrength;
+}
+
+// Find the strength of a hand with a full house
+strength strengthFullHouse(vector<card> hand)
+{
+    int i = 0, j = 0, threeOfKindTracker = 0;
+    pips threeOfKindPips = acelow, threeOfKindPips2 = acelow, pairPips = acelow, pairPips2 = acelow;
+    strength cardStrength;
+    // Find the three of a kind pips value
+    for (i = 0; i < hand.size(); i++) {
+        threeOfKindTracker = 0;
+        for (j = i+1; j < hand.size(); j++) {
+            if ((hand[i].p == hand[j].p) && threeOfKindTracker == 1) {
+                threeOfKindTracker = 2;
+                threeOfKindPips = hand[i].p;
+            }
+            else if (hand[i].p == hand[j].p) {
+                threeOfKindTracker = 1;
+            }
+        }
+        if (threeOfKindTracker == 2) {
+            break;
+        }
+    }
+    // Check to see if there's a second three of a kind (possible for 7 card hands)
+    for (i = 0; i < hand.size(); i++) {
+        threeOfKindTracker = 0;
+        for (j = i+1; j < hand.size(); j++) {
+            if ((hand[i].p == hand[j].p) && (threeOfKindTracker == 1) && (!(hand[i].p == threeOfKindPips))) {
+                threeOfKindPips2 = hand[i].p;
+            }
+            else if ((hand[i].p == hand[j].p) && (!(hand[i].p == threeOfKindPips))) {
+                threeOfKindTracker = 1;
+            }
+        }
+    }
+    // If there's two sets of "three of a kind", find the bigger pips value between the two sets
+    if (threeOfKindPips2 > threeOfKindPips) {
+        threeOfKindPips = threeOfKindPips2;
+    }
+    // Find the pair pips value
+    for (i = 0; i < hand.size(); i++) {
+        if (!(hand[i].p == threeOfKindPips)) {
+            pairPips = hand[i].p;
+        }
+    }
+    // Check to see if there's a second pair (possible for 7 card hands)
+    for (i = 0; i < hand.size(); i++) {
+        if ((!(hand[i].p == threeOfKindPips)) && (!(hand[i].p == pairPips))) {
+            pairPips2 = hand[i].p;
+        }
+    }
+    // If the second pair is bigger than the first pair, replace the first pair with the second pair's pips value
+    if (pairPips2 > pairPips) {
+        pairPips = pairPips2;
+    }
+    // Assign pips values for the card strength struct
+    cardStrength.p1 = threeOfKindPips;  // pips value for the three of a kind
+    cardStrength.p2 = pairPips;  // pips value for the pair
+    cardStrength.p3 = acelow;  // not used
+    cardStrength.p4 = acelow;  // not used
+    cardStrength.p5 = acelow;  // not used
+
+    return cardStrength;
+}
+
+// Find the strength of a hand with four of a kind
+strength strengthFourOfKind(vector<card> hand)
+{
+    int i = 0, j = 0, fourOfKindTracker = 0;
+    pips fourOfKindPips = acelow, singlePips = acelow;
+    vector<pips> pipsVector;
+    strength cardStrength;
+    // Reset the pips array to all zeros
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    // Get pips values from the hand
+    for (i = 0; i < hand.size(); i++) {
+        pipsVector.push_back(hand[i].p);
+    }
+    // Find the four of a kind pips value in the hand
+    for (i = 0; i < hand.size(); i++) {
+        fourOfKindTracker = 0;
+        for (j = i+1; j < hand.size(); j++) {
+            if ((hand[i].p == hand[j].p) && fourOfKindTracker == 2) {
+                fourOfKindPips = hand[i].p;
+            }
+            else if ((hand[i].p == hand[j].p) && fourOfKindTracker == 1) {
+                fourOfKindTracker = 2;
+            }
+            else if (hand[i].p == hand[j].p) {
+                fourOfKindTracker = 1;
+            }
+        }    
+    }
+    // Find the highest single pips value by sorting the remaining pips
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    for (i = 0; i < hand.size(); i++) {
+        if (!(hand[i].p == fourOfKindPips)) {
+            pipsVector.push_back(hand[i].p);
+        }   
+    }
+    sort(pipsVector.begin(), pipsVector.end(), greater<int>());
+    // Assign pips values for the card strength struct
+    cardStrength.p1 = fourOfKindPips;  // pips value for the four of a kind
+    cardStrength.p2 = pipsVector[0];  // highest single pips
+    cardStrength.p3 = acelow;  // not used
+    cardStrength.p4 = acelow;  // not used
+    cardStrength.p5 = acelow;  // not used
+    
+    return cardStrength;
+}
+
+// Find the strength of a hand with a straight flush
+strength strengthStraightFlush(vector<card> hand)
+{
+    int i = 0, j = 0, flushTracker = 0;
+    suit flushSuit; 
+    vector<pips> pipsVector;
+    pips straightPipsHigh = acelow;
+    strength cardStrength;
+    // Find the flush suit (5 cards of same suit)
+    for (i = 0; i < hand.size(); i++) {
+        flushTracker = 0;
+        for (j = i+1; j < hand.size(); j++) {
+            if ((hand[i].s == hand[j].s) && flushTracker == 3) {
+                flushSuit = hand[i].s;
+            }
+            else if ((hand[i].s == hand[j].s) && flushTracker == 2) {
+                flushTracker = 3;
+            }
+            else if ((hand[i].s == hand[j].s) && flushTracker == 1) {
+                flushTracker = 2;
+            }
+            else if ((hand[i].s == hand[j].s) && flushTracker == 0) {
+                flushTracker = 1;
+            }
+        }    
+    }
+    // Reset the pips array to all zeros
+    pipsVector.erase(pipsVector.begin(), pipsVector.end());
+    // Get pips values from the hand for only the flush suit
+    for (i = 0; i < hand.size(); i++) {
+        if (hand[i].s == flushSuit) {
+            pipsVector.push_back(hand[i].p);
+            // If an ace is found, it has to be converted to be low instead of high (high would be royal flush)
+            if (pipsVector.back() == ace) {
+                pipsVector.back() = acelow;
+            }
+        }
+    }
+    // Sort the pips values and determine if either of the top two pips values are part of the straight (applicable for 7 card hands)
+    // Should only need to check the next two pips values directly below the pips value being checked to verify the straight
+    sort(pipsVector.begin(), pipsVector.end(), greater<int>());
+    if ((pipsVector[1] == (pipsVector[0]-1))
+    && (pipsVector[2] == (pipsVector[0]-2))) {
+        straightPipsHigh = pipsVector[0];
+    }
+    else if ((pipsVector[2] == (pipsVector[1]-1))
+    && (pipsVector[3] == (pipsVector[1]-2))) {
+        straightPipsHigh = pipsVector[1];
+    }
+    else {
+        straightPipsHigh = pipsVector[2];
+    }
+    // Assign the hand's pips values into the card strength struct (p1 strongest, p5 weakest)
+    sort(pipsVector.begin(), pipsVector.end(), greater<int>());
+    cardStrength.p1 = straightPipsHigh;  // highest pips value of the straight flush
+    cardStrength.p2 = acelow;  // not used
+    cardStrength.p3 = acelow;  // not used
+    cardStrength.p4 = acelow;  // not usedv
+    cardStrength.p5 = acelow;  // not used
+    
+    return cardStrength;
+}
+
+// Find the strength of the hand that was dealt based on the hand type
+strength findHandStrength(vector<card> hand, handtype ht)
+{
+    strength result, cardStrength;
+    switch (ht) {
+        case aceHighOrLess: result = strengthAceHighOrLess(hand); break;
+        case singlePair: result = strengthSinglePair(hand); break;
+        case twoPair: result = strengthTwoPair(hand); break;
+        case threeOfKind: result = strengthThreeOfKind(hand); break;
+        case stdStraight: result = strengthStraight(hand); break;
+        case stdFlush: result = strengthFlush(hand); break;
+        case fullHouse: result = strengthFullHouse(hand); break;
+        case fourOfKind: result = strengthFourOfKind(hand); break;
+        case straightFlush: result = strengthStraightFlush(hand); break;
+        default: break;
+    }
+
+    return result;
+}
+
+// Determine who has the best hand out of all of the players
+void determineWinner(vector<vector<card>> playerHand)
+{
+    int i = 0, j = 0, bestHandCount = 0;
+    handtype bestHandtype = aceHighOrLess;
+    vector<handtype> playerHandtype;
+    vector<strength> playerStrength;
+    vector<int> playersWithBestHand;
+    int playerWinner = 0, playerCurrent = 0;
+    vector<int> playersWithTiedHand;
+    int tiedHandCount = 0, tiedHandIsBest = 0;
+    int stopEvaluating = 0;
+
+    cout << "GOT HERE 1";  // DEBUG TEST
+    // Get the hand types and strengths for each player
+    for (i = 0; i < playerHand.size(); i++) {
+        playerHandtype[i] = findHandType(playerHand[i]);
+        playerStrength[i] = findHandStrength(playerHand[i], playerHandtype[i]);
+    }
+    cout << "GOT HERE 2";  // DEBUG TEST
+    // Find the best hand type out of all the players
+    for (i = 0; i < playerHand.size(); i++) {
+        if (i == 0) {  // For starting off, set the first player's hand to be the best
+            bestHandtype = playerHandtype[i];
+        }
+        else if (playerHandtype[i] > bestHandtype) {
+            bestHandtype = playerHandtype[i];
+        }
+    }
+    cout << endl << "The best ";
+    PrintHandType(bestHandtype);
+    
+    // Determine which players have the best hand type
+    for (i = 0; i < playerHand.size(); i++) {
+        if (playerHandtype[i] == bestHandtype) {
+            playersWithBestHand[j] = i;
+            bestHandCount++;
+            j++;
+        }
+    }
+    // If only 1 player has the best hand type, that player wins the hand
+    if (bestHandCount == 1) {
+        cout << endl << "Player " << playersWithBestHand[0]+1 << " is the winner!" << endl << endl;
+    }
+    // If 2 or more players have the best hand type, use the strength values to break the tie
+    else if (bestHandCount >= 2) {
+        for (i = 0; i < bestHandCount; i++) {
+            if (i == 0) {  // For starting off, set the first player within the tie to be the winner
+                playerWinner = playersWithBestHand[i];
+            }
+            else {
+                playerCurrent = playersWithBestHand[i];
+                if (playerStrength[playerCurrent].p1 > playerStrength[playerWinner].p1) {
+                    playerWinner = playerCurrent;
+                    tiedHandIsBest = 0;
+                    tiedHandCount = 0;
+                }
+                else if ((playerStrength[playerCurrent].p1 == playerStrength[playerWinner].p1)
+                && (playerStrength[playerCurrent].p2 > playerStrength[playerWinner].p2)) {
+                    playerWinner = playerCurrent;
+                    tiedHandIsBest = 0;
+                    tiedHandCount = 0;
+                }
+                else if ((playerStrength[playerCurrent].p1 == playerStrength[playerWinner].p1)
+                && (playerStrength[playerCurrent].p2 == playerStrength[playerWinner].p2)
+                && (playerStrength[playerCurrent].p3 > playerStrength[playerWinner].p3)) {
+                    playerWinner = playerCurrent;
+                    tiedHandIsBest = 0;
+                    tiedHandCount = 0;
+                }
+                else if ((playerStrength[playerCurrent].p1 == playerStrength[playerWinner].p1)
+                && (playerStrength[playerCurrent].p2 == playerStrength[playerWinner].p2)
+                && (playerStrength[playerCurrent].p3 == playerStrength[playerWinner].p3)
+                && (playerStrength[playerCurrent].p4 > playerStrength[playerWinner].p4)) {
+                    playerWinner = playerCurrent;
+                    tiedHandIsBest = 0;
+                    tiedHandCount = 0;
+                }
+                else if ((playerStrength[playerCurrent].p1 == playerStrength[playerWinner].p1)
+                && (playerStrength[playerCurrent].p2 == playerStrength[playerWinner].p2)
+                && (playerStrength[playerCurrent].p3 == playerStrength[playerWinner].p3)
+                && (playerStrength[playerCurrent].p4 == playerStrength[playerWinner].p4)
+                && (playerStrength[playerCurrent].p5 > playerStrength[playerWinner].p5)) {
+                    playerWinner = playerCurrent;
+                    tiedHandIsBest = 0;
+                    tiedHandCount = 0;
+                }
+                // If 2 or more players have both the same hand type and strength values, they are tied and the hand ends
+                else if ((playerStrength[playerCurrent].p1 == playerStrength[playerWinner].p1)
+                && (playerStrength[playerCurrent].p2 == playerStrength[playerWinner].p2)
+                && (playerStrength[playerCurrent].p3 == playerStrength[playerWinner].p3)
+                && (playerStrength[playerCurrent].p4 == playerStrength[playerWinner].p4)
+                && (playerStrength[playerCurrent].p5 == playerStrength[playerWinner].p5)) {
+                    if (tiedHandCount == 0) {
+                        playersWithTiedHand[0] == playerWinner;
+                        playersWithTiedHand[1] == playerCurrent;
+                        tiedHandCount += 2;
+                        tiedHandIsBest = 1;
+                    }
+                    else {
+                        playersWithTiedHand[tiedHandCount] == playerCurrent;
+                        tiedHandCount++;
+                    }
+                }
+                stopEvaluating = 0;
+            }
+        }
+        // Print the winner after evaluating the strength values
+        if (tiedHandIsBest == 0) {
+            cout << endl << "Player " << playerWinner+1 << " is the winner!" << endl << endl;
+        }
+        // If there's still a tie after evaluating the strength values, print the players that are involved in the tie
+        else {
+            switch (tiedHandCount) {
+                case 2: 
+                    printf("\nPlayers %d and %d are tied!\n\n", 
+                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1);
+                    break;
+                case 3:
+                    printf("\nPlayers %d, %d, and %d are tied!\n\n", 
+                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1);
+                    break;
+                case 4:
+                    printf("\nPlayers %d, %d, %d, and %d are tied!\n\n", 
+                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1);
+                    break;
+                case 5:
+                    printf("\nPlayers %d, %d, %d, %d, and %d are tied!\n\n", 
+                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1);
+                    break;
+                case 6:
+                    printf("\nPlayers %d, %d, %d, %d, %d, and %d are tied!\n\n", 
+                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
+                    playersWithTiedHand[5]+1);
+                    break;
+                case 7:
+                    printf("\nPlayers %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
+                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
+                    playersWithTiedHand[5]+1, playersWithTiedHand[6]+1);
+                    break;
+                case 8:
+                    printf("\nPlayers %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
+                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
+                    playersWithTiedHand[5]+1, playersWithTiedHand[6]+1, playersWithTiedHand[7]+1);
+                    break;
+                case 9:
+                    printf("\nPlayers %d, %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
+                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
+                    playersWithTiedHand[5]+1, playersWithTiedHand[6]+1, playersWithTiedHand[7]+1, playersWithTiedHand[8]+1);
+                    break;
+                case 10:
+                    printf("\nPlayers %d, %d, %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
+                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
+                    playersWithTiedHand[5]+1, playersWithTiedHand[6]+1, playersWithTiedHand[7]+1, playersWithTiedHand[8]+1, playersWithTiedHand[9]+1);
+                    break;
+                default: break;
+            }
+        }
+    }
 }

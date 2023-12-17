@@ -13,8 +13,8 @@ using namespace std;
 
 int main() {
     //TESTprintDeck();  // Creates all possible deck types and prints them to terminal window
-    //TESTshuffleDeck();  // Shuffles all possible deck types and prints them to terminal window
-    TESTmoveCard();  // Creates subdecks from a main deck and prints them to terminal window
+    TESTshuffleDeck();  // Shuffles all possible deck types and prints them to terminal window
+    //TESTmoveCard();  // Creates subdecks from a main deck and prints them to terminal window
 
     return 0;
 }
