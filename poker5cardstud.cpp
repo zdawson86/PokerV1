@@ -253,10 +253,10 @@ int main() {
             currentStrength = findHandStrength(playerHand[9], currentHandType);
             printf("Strength (high to low) = %d %d %d %d %d \n\n", currentStrength.p1, currentStrength.p2, currentStrength.p3, currentStrength.p4, currentStrength.p5);
         }
-        
+
         // Determine who has the best hand out of all of the players
         cout << "GOT HERE 0";  // DEBUG TEST
-        determineWinner(playerHand);
+        //determineWinner(playerHand);
 
         // Print all of the cards in play
         //printf("Cards in play:\n");
@@ -264,7 +264,7 @@ int main() {
         //    PrintCard(cardsInPlay[i]);
         //}
 
-        }  // END OF WHILE(1) LOOP
+    }  // END OF WHILE(1) LOOP
 
     return 0;
 }
