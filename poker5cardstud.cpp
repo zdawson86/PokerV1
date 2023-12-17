@@ -256,7 +256,7 @@ int main() {
 
         // Determine who has the best hand out of all of the players
         cout << "GOT HERE 0";  // DEBUG TEST
-        //determineWinner(playerHand);
+        determineWinner(playerHand);
 
         // Print all of the cards in play
         //printf("Cards in play:\n");
