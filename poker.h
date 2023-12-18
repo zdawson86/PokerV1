@@ -824,13 +824,11 @@ void determineWinner(vector<vector<card>> playerHand)
     int tiedHandCount = 0, tiedHandIsBest = 0;
     int stopEvaluating = 0;
 
-    cout << "GOT HERE 1";  // DEBUG TEST
     // Get the hand types and strengths for each player
     for (i = 0; i < playerHand.size(); i++) {
-        playerHandtype[i] = findHandType(playerHand[i]);
-        playerStrength[i] = findHandStrength(playerHand[i], playerHandtype[i]);
+        playerHandtype.push_back(findHandType(playerHand[i]));
+        playerStrength.push_back(findHandStrength(playerHand[i], playerHandtype[i]));
     }
-    cout << "GOT HERE 2";  // DEBUG TEST
     // Find the best hand type out of all the players
     for (i = 0; i < playerHand.size(); i++) {
         if (i == 0) {  // For starting off, set the first player's hand to be the best
@@ -846,9 +844,8 @@ void determineWinner(vector<vector<card>> playerHand)
     // Determine which players have the best hand type
     for (i = 0; i < playerHand.size(); i++) {
         if (playerHandtype[i] == bestHandtype) {
-            playersWithBestHand[j] = i;
+            playersWithBestHand.push_back(i);
             bestHandCount++;
-            j++;
         }
     }
     // If only 1 player has the best hand type, that player wins the hand
@@ -969,5 +966,80 @@ void determineWinner(vector<vector<card>> playerHand)
                 default: break;
             }
         }
+    }
+}
+
+void printPokerHand(handtype ht, strength s) {
+    switch (ht) {
+        case aceHighOrLess:
+            switch (s.p1) {
+                case two: cout << "2 High"; break;
+                case three: cout << "3 High"; break;
+                case four: cout << "4 High"; break;
+                case five: cout << "5 High"; break;
+                case six: cout << "6 High"; break;
+                case seven: cout << "7 High"; break;
+                case eight: cout << "8 High"; break;
+                case nine: cout << "9 High"; break;
+                case ten: cout << "10 High"; break;
+                case jack: cout << "Jack High"; break;
+                case queen: cout << "Queen High"; break;
+                case king: cout << "King High"; break;
+                case ace: cout << "Ace High"; break;
+                default: break;
+            } break;
+        case singlePair:
+            switch (s.p1) {
+                case two: cout << "Pair of 2's"; break;
+                case three: cout << "Pair of 3's"; break;
+                case four: cout << "Pair of 4's"; break;
+                case five: cout << "Pair of 5's"; break;
+                case six: cout << "Pair of 6's"; break;
+                case seven: cout << "Pair of 7's"; break;
+                case eight: cout << "Pair of 8's"; break;
+                case nine: cout << "Pair of 9's"; break;
+                case ten: cout << "Pair of 10's"; break;
+                case jack: cout << "Pair of Jacks"; break;
+                case queen: cout << "Pair of Queens"; break;
+                case king: cout << "Pair of Kings"; break;
+                case ace: cout << "Pair of Aces"; break;
+                default: break;
+            } break;
+        case twoPair:
+            cout << "Two Pair, ";
+            switch (s.p1) {
+                case two: cout << "2's"; break;
+                case three: cout << "3's"; break;
+                case four: cout << "4's"; break;
+                case five: cout << "5's"; break;
+                case six: cout << "6's"; break;
+                case seven: cout << "7's"; break;
+                case eight: cout << "8's"; break;
+                case nine: cout << "9's"; break;
+                case ten: cout << "10's"; break;
+                case jack: cout << "Jacks"; break;
+                case queen: cout << "Queens"; break;
+                case king: cout << "Kings"; break;
+                case ace: cout << "Aces"; break;
+                default: break;
+            }
+            cout << " and ";
+            switch (s.p2) {
+                case two: cout << "2's"; break;
+                case three: cout << "3's"; break;
+                case four: cout << "4's"; break;
+                case five: cout << "5's"; break;
+                case six: cout << "6's"; break;
+                case seven: cout << "7's"; break;
+                case eight: cout << "8's"; break;
+                case nine: cout << "9's"; break;
+                case ten: cout << "10's"; break;
+                case jack: cout << "Jacks"; break;
+                case queen: cout << "Queens"; break;
+                case king: cout << "Kings"; break;
+                case ace: cout << "Aces"; break;
+                default: break;
+            } break;
+        default: break;
     }
 }
