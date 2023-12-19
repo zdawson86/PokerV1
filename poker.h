@@ -812,7 +812,7 @@ strength findHandStrength(vector<card> hand, handtype ht)
 }
 
 // Determine who has the best hand out of all of the players
-void determineWinner(vector<vector<card>> playerHand)
+int determineWinner(vector<vector<card>> playerHand)
 {
     int i = 0, j = 0, bestHandCount = 0;
     handtype bestHandtype = aceHighOrLess;
@@ -838,8 +838,8 @@ void determineWinner(vector<vector<card>> playerHand)
             bestHandtype = playerHandtype[i];
         }
     }
-    cout << endl << "The best ";
-    PrintHandType(bestHandtype);
+    //cout << endl << "The best ";
+    //PrintHandType(bestHandtype);
     
     // Determine which players have the best hand type
     for (i = 0; i < playerHand.size(); i++) {
@@ -850,7 +850,7 @@ void determineWinner(vector<vector<card>> playerHand)
     }
     // If only 1 player has the best hand type, that player wins the hand
     if (bestHandCount == 1) {
-        cout << endl << "Player " << playersWithBestHand[0]+1 << " is the winner!" << endl << endl;
+        cout << endl << endl << "Player " << playersWithBestHand[0]+1 << " is the winner!" << endl << endl;
     }
     // If 2 or more players have the best hand type, use the strength values to break the tie
     else if (bestHandCount >= 2) {
@@ -917,49 +917,49 @@ void determineWinner(vector<vector<card>> playerHand)
         }
         // Print the winner after evaluating the strength values
         if (tiedHandIsBest == 0) {
-            cout << endl << "Player " << playerWinner+1 << " is the winner!" << endl << endl;
+            cout << endl << endl << "Player " << playerWinner+1 << " is the winner!" << endl << endl;
         }
         // If there's still a tie after evaluating the strength values, print the players that are involved in the tie
         else {
             switch (tiedHandCount) {
                 case 2: 
-                    printf("\nPlayers %d and %d are tied!\n\n", 
+                    printf("\n\nPlayers %d and %d are tied!\n\n", 
                     playersWithTiedHand[0]+1, playersWithTiedHand[1]+1);
                     break;
                 case 3:
-                    printf("\nPlayers %d, %d, and %d are tied!\n\n", 
+                    printf("\n\nPlayers %d, %d, and %d are tied!\n\n", 
                     playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1);
                     break;
                 case 4:
-                    printf("\nPlayers %d, %d, %d, and %d are tied!\n\n", 
+                    printf("\n\nPlayers %d, %d, %d, and %d are tied!\n\n", 
                     playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1);
                     break;
                 case 5:
-                    printf("\nPlayers %d, %d, %d, %d, and %d are tied!\n\n", 
+                    printf("\n\nPlayers %d, %d, %d, %d, and %d are tied!\n\n", 
                     playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1);
                     break;
                 case 6:
-                    printf("\nPlayers %d, %d, %d, %d, %d, and %d are tied!\n\n", 
+                    printf("\n\nPlayers %d, %d, %d, %d, %d, and %d are tied!\n\n", 
                     playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
                     playersWithTiedHand[5]+1);
                     break;
                 case 7:
-                    printf("\nPlayers %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
+                    printf("\n\nPlayers %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
                     playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
                     playersWithTiedHand[5]+1, playersWithTiedHand[6]+1);
                     break;
                 case 8:
-                    printf("\nPlayers %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
+                    printf("\n\nPlayers %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
                     playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
                     playersWithTiedHand[5]+1, playersWithTiedHand[6]+1, playersWithTiedHand[7]+1);
                     break;
                 case 9:
-                    printf("\nPlayers %d, %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
+                    printf("\n\nPlayers %d, %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
                     playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
                     playersWithTiedHand[5]+1, playersWithTiedHand[6]+1, playersWithTiedHand[7]+1, playersWithTiedHand[8]+1);
                     break;
                 case 10:
-                    printf("\nPlayers %d, %d, %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
+                    printf("\n\nPlayers %d, %d, %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
                     playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
                     playersWithTiedHand[5]+1, playersWithTiedHand[6]+1, playersWithTiedHand[7]+1, playersWithTiedHand[8]+1, playersWithTiedHand[9]+1);
                     break;
@@ -967,12 +967,30 @@ void determineWinner(vector<vector<card>> playerHand)
             }
         }
     }
+
+    return playerWinner;
 }
 
 void printPokerHand(handtype ht, strength s) {
     switch (ht) {
         case aceHighOrLess:
             switch (s.p1) {
+                case two: cout << "2 "; break;
+                case three: cout << "3 "; break;
+                case four: cout << "4 "; break;
+                case five: cout << "5 "; break;
+                case six: cout << "6 "; break;
+                case seven: cout << "7 "; break;
+                case eight: cout << "8 "; break;
+                case nine: cout << "9 "; break;
+                case ten: cout << "10 "; break;
+                case jack: cout << "Jack "; break;
+                case queen: cout << "Queen "; break;
+                case king: cout << "King "; break;
+                case ace: cout << "Ace "; break;
+                default: break;
+            }
+            switch (s.p2) {
                 case two: cout << "2 High"; break;
                 case three: cout << "3 High"; break;
                 case four: cout << "4 High"; break;
@@ -1003,6 +1021,22 @@ void printPokerHand(handtype ht, strength s) {
                 case queen: cout << "Pair of Queens"; break;
                 case king: cout << "Pair of Kings"; break;
                 case ace: cout << "Pair of Aces"; break;
+                default: break;
+            }
+            switch (s.p2) {
+                case two: cout << ", 2 High"; break;
+                case three: cout << ", 3 High"; break;
+                case four: cout << ", 4 High"; break;
+                case five: cout << ", 5 High"; break;
+                case six: cout << ", 6 High"; break;
+                case seven: cout << ", 7 High"; break;
+                case eight: cout << ", 8 High"; break;
+                case nine: cout << ", 9 High"; break;
+                case ten: cout << ", 10 High"; break;
+                case jack: cout << ", Jack High"; break;
+                case queen: cout << ", Queen High"; break;
+                case king: cout << ", King High"; break;
+                case ace: cout << ", Ace High"; break;
                 default: break;
             } break;
         case twoPair:
@@ -1040,6 +1074,138 @@ void printPokerHand(handtype ht, strength s) {
                 case ace: cout << "Aces"; break;
                 default: break;
             } break;
+        case threeOfKind:
+            cout << "Three of a kind with ";
+            switch (s.p1) {
+                case two: cout << "2's"; break;
+                case three: cout << "3's"; break;
+                case four: cout << "4's"; break;
+                case five: cout << "5's"; break;
+                case six: cout << "6's"; break;
+                case seven: cout << "7's"; break;
+                case eight: cout << "8's"; break;
+                case nine: cout << "9's"; break;
+                case ten: cout << "10's"; break;
+                case jack: cout << "Jacks"; break;
+                case queen: cout << "Queens"; break;
+                case king: cout << "Kings"; break;
+                case ace: cout << "Aces"; break;
+                default: break;
+            } break;
+        case stdStraight:
+            cout << "Straight, ";
+            switch (s.p1) {
+                case two: cout << "2 high"; break;
+                case three: cout << "3 high"; break;
+                case four: cout << "4 high"; break;
+                case five: cout << "5 high"; break;
+                case six: cout << "6 high"; break;
+                case seven: cout << "7 high"; break;
+                case eight: cout << "8 high"; break;
+                case nine: cout << "9 high"; break;
+                case ten: cout << "10 high"; break;
+                case jack: cout << "Jack high"; break;
+                case queen: cout << "Queen high"; break;
+                case king: cout << "King high"; break;
+                case ace: cout << "Ace high"; break;
+                default: break;
+            } break;
+        case stdFlush:
+            cout << "Flush, ";
+            switch (s.p1) {
+                case two: cout << "2 high"; break;
+                case three: cout << "3 high"; break;
+                case four: cout << "4 high"; break;
+                case five: cout << "5 high"; break;
+                case six: cout << "6 high"; break;
+                case seven: cout << "7 high"; break;
+                case eight: cout << "8 high"; break;
+                case nine: cout << "9 high"; break;
+                case ten: cout << "10 high"; break;
+                case jack: cout << "Jack high"; break;
+                case queen: cout << "Queen high"; break;
+                case king: cout << "King high"; break;
+                case ace: cout << "Ace high"; break;
+                default: break;
+            } break;
+        case fullHouse:
+            cout << "Full House, ";
+            switch (s.p1) {
+                case two: cout << "2's"; break;
+                case three: cout << "3's"; break;
+                case four: cout << "4's"; break;
+                case five: cout << "5's"; break;
+                case six: cout << "6's"; break;
+                case seven: cout << "7's"; break;
+                case eight: cout << "8's"; break;
+                case nine: cout << "9's"; break;
+                case ten: cout << "10's"; break;
+                case jack: cout << "Jacks"; break;
+                case queen: cout << "Queens"; break;
+                case king: cout << "Kings"; break;
+                case ace: cout << "Aces"; break;
+                default: break;
+            }
+            cout << " over ";
+            switch (s.p2) {
+                case two: cout << "2's"; break;
+                case three: cout << "3's"; break;
+                case four: cout << "4's"; break;
+                case five: cout << "5's"; break;
+                case six: cout << "6's"; break;
+                case seven: cout << "7's"; break;
+                case eight: cout << "8's"; break;
+                case nine: cout << "9's"; break;
+                case ten: cout << "10's"; break;
+                case jack: cout << "Jacks"; break;
+                case queen: cout << "Queens"; break;
+                case king: cout << "Kings"; break;
+                case ace: cout << "Aces"; break;
+                default: break;
+            } break;
+        case fourOfKind:
+            cout << "Four of a kind with ";
+            switch (s.p1) {
+                case two: cout << "2's"; break;
+                case three: cout << "3's"; break;
+                case four: cout << "4's"; break;
+                case five: cout << "5's"; break;
+                case six: cout << "6's"; break;
+                case seven: cout << "7's"; break;
+                case eight: cout << "8's"; break;
+                case nine: cout << "9's"; break;
+                case ten: cout << "10's"; break;
+                case jack: cout << "Jacks"; break;
+                case queen: cout << "Queens"; break;
+                case king: cout << "Kings"; break;
+                case ace: cout << "Aces"; break;
+                default: break;
+            } break;
+        case straightFlush:
+            cout << "Straight Flush, ";
+            switch (s.p1) {
+                case two: cout << "2 high"; break;
+                case three: cout << "3 high"; break;
+                case four: cout << "4 high"; break;
+                case five: cout << "5 high"; break;
+                case six: cout << "6 high"; break;
+                case seven: cout << "7 high"; break;
+                case eight: cout << "8 high"; break;
+                case nine: cout << "9 high"; break;
+                case ten: cout << "10 high"; break;
+                case jack: cout << "Jack high"; break;
+                case queen: cout << "Queen high"; break;
+                case king: cout << "King high"; break;
+                case ace: cout << "Ace high"; break;
+                default: break;
+            } break;
+        case royalFlush:
+            cout << "Royal Flush"; break;
         default: break;
     }
+}
+
+void printNewRoundHeader(int roundNumber) {
+    cout << endl << "----------------------------------------" << endl;
+    cout << "Round " << roundNumber << endl;
 }
