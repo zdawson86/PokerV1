@@ -1209,3 +1209,8 @@ void printNewRoundHeader(int roundNumber) {
     cout << endl << "----------------------------------------" << endl;
     cout << "Round " << roundNumber << endl;
 }
+
+action computerPlayerAction(handtype ht, strength s, int playerCount, int betSize, int chipStack) {
+    action a;
+    return a;
+};
