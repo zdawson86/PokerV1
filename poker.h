@@ -1210,7 +1210,255 @@ void printNewRoundHeader(int roundNumber) {
     cout << "Round " << roundNumber << endl;
 }
 
-action computerPlayerAction(handtype ht, strength s, int playerCount, int betSize, int chipStack) {
-    action a;
-    return a;
+// Computer player will bet based on various input values
+// Return value of 0 = check, -1 = fold
+int computerBet(handtype ht, strength s, int playerCount, int betSize, int chipStack) {
+    int betOut;
+    int handValue;
+
+    // Calculate the value of the hand for determining what the computer should bet
+    switch (ht) {
+        case aceHighOrLess:
+            switch (s.p1) {
+                case seven: handValue += 1; break;
+                case eight: handValue += 2; break;
+                case nine: handValue += 3; break;
+                case ten: handValue += 4; break;
+                case jack: handValue += 5; break;
+                case queen: handValue += 6; break;
+                case king: handValue += 7; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } 
+            switch (s.p2) {
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 3; break;
+                case eight: handValue += 4; break;
+                case nine: handValue += 5; break;
+                case ten: handValue += 6; break;
+                case jack: handValue += 7; break;
+                case queen: handValue += 8; break;
+                case king: handValue += 9; break;
+                default: break;
+            } break;
+        case singlePair:
+            switch (s.p1) {
+                case two: handValue += 1; break;
+                case three: handValue += 1; break;
+                case four: handValue += 2; break;
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 1; break;
+                case eight: handValue += 2; break;
+                case nine: handValue += 3; break;
+                case ten: handValue += 4; break;
+                case jack: handValue += 5; break;
+                case queen: handValue += 6; break;
+                case king: handValue += 7; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } 
+            switch (s.p2) {
+                case two: handValue += 1; break;
+                case three: handValue += 1; break;
+                case four: handValue += 2; break;
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 3; break;
+                case eight: handValue += 4; break;
+                case nine: handValue += 5; break;
+                case ten: handValue += 6; break;
+                case jack: handValue += 7; break;
+                case queen: handValue += 8; break;
+                case king: handValue += 9; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } break;
+        case twoPair:
+            switch (s.p1) {
+                case three: handValue += 1; break;
+                case four: handValue += 2; break;
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 1; break;
+                case eight: handValue += 2; break;
+                case nine: handValue += 3; break;
+                case ten: handValue += 4; break;
+                case jack: handValue += 5; break;
+                case queen: handValue += 6; break;
+                case king: handValue += 7; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } 
+            switch (s.p2) {
+                case two: handValue += 1; break;
+                case three: handValue += 1; break;
+                case four: handValue += 2; break;
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 3; break;
+                case eight: handValue += 4; break;
+                case nine: handValue += 5; break;
+                case ten: handValue += 6; break;
+                case jack: handValue += 7; break;
+                case queen: handValue += 8; break;
+                case king: handValue += 9; break;
+                default: break;
+            } break;
+        case threeOfKind:
+            switch (s.p1) {
+                case two: handValue += 1; break;
+                case three: handValue += 1; break;
+                case four: handValue += 2; break;
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 1; break;
+                case eight: handValue += 2; break;
+                case nine: handValue += 3; break;
+                case ten: handValue += 4; break;
+                case jack: handValue += 5; break;
+                case queen: handValue += 6; break;
+                case king: handValue += 7; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } 
+            switch (s.p2) {
+                case two: handValue += 1; break;
+                case three: handValue += 1; break;
+                case four: handValue += 2; break;
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 3; break;
+                case eight: handValue += 4; break;
+                case nine: handValue += 5; break;
+                case ten: handValue += 6; break;
+                case jack: handValue += 7; break;
+                case queen: handValue += 8; break;
+                case king: handValue += 9; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } break;
+        case stdStraight:
+            switch (s.p1) {
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 1; break;
+                case eight: handValue += 2; break;
+                case nine: handValue += 3; break;
+                case ten: handValue += 4; break;
+                case jack: handValue += 5; break;
+                case queen: handValue += 6; break;
+                case king: handValue += 7; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } break;
+        case stdFlush:
+            switch (s.p1) {
+                case seven: handValue += 1; break;
+                case eight: handValue += 2; break;
+                case nine: handValue += 3; break;
+                case ten: handValue += 4; break;
+                case jack: handValue += 5; break;
+                case queen: handValue += 6; break;
+                case king: handValue += 7; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } 
+            switch (s.p2) {
+                case six: handValue += 2; break;
+                case seven: handValue += 3; break;
+                case eight: handValue += 4; break;
+                case nine: handValue += 5; break;
+                case ten: handValue += 6; break;
+                case jack: handValue += 7; break;
+                case queen: handValue += 8; break;
+                case king: handValue += 9; break;
+                default: break;
+            } break;
+        case fullHouse:
+            switch (s.p1) {
+                case two: handValue += 1; break;
+                case three: handValue += 1; break;
+                case four: handValue += 2; break;
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 1; break;
+                case eight: handValue += 2; break;
+                case nine: handValue += 3; break;
+                case ten: handValue += 4; break;
+                case jack: handValue += 5; break;
+                case queen: handValue += 6; break;
+                case king: handValue += 7; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } 
+            switch (s.p2) {
+                case two: handValue += 1; break;
+                case three: handValue += 1; break;
+                case four: handValue += 2; break;
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 3; break;
+                case eight: handValue += 4; break;
+                case nine: handValue += 5; break;
+                case ten: handValue += 6; break;
+                case jack: handValue += 7; break;
+                case queen: handValue += 8; break;
+                case king: handValue += 9; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } break;
+        case fourOfKind:
+            switch (s.p1) {
+                case two: handValue += 1; break;
+                case three: handValue += 1; break;
+                case four: handValue += 2; break;
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 1; break;
+                case eight: handValue += 2; break;
+                case nine: handValue += 3; break;
+                case ten: handValue += 4; break;
+                case jack: handValue += 5; break;
+                case queen: handValue += 6; break;
+                case king: handValue += 7; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } 
+            switch (s.p2) {
+                case two: handValue += 1; break;
+                case three: handValue += 1; break;
+                case four: handValue += 2; break;
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 3; break;
+                case eight: handValue += 4; break;
+                case nine: handValue += 5; break;
+                case ten: handValue += 6; break;
+                case jack: handValue += 7; break;
+                case queen: handValue += 8; break;
+                case king: handValue += 9; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } break;
+        case straightFlush:
+            switch (s.p1) {
+                case five: handValue += 1; break;
+                case six: handValue += 2; break;
+                case seven: handValue += 1; break;
+                case eight: handValue += 2; break;
+                case nine: handValue += 3; break;
+                case ten: handValue += 4; break;
+                case jack: handValue += 5; break;
+                case queen: handValue += 6; break;
+                case king: handValue += 7; break;
+                case ace: handValue += 8; break;
+                default: break;
+            } break;
+        case royalFlush: handValue += 9; break;
+    default: break;
+    }
+
+    return betOut;
 };
