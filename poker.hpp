@@ -9,7 +9,7 @@ This sets up the functions that are necessary for various poker games.
 #include <cmath>
 using namespace std;
 
-#include "carddeck.h"
+#include "carddeck.hpp"
 
 const int FOUND = 1;
 const int NOT_FOUND = 0;
@@ -819,7 +819,8 @@ int determineWinner(vector<vector<card>> playerHand)
     vector<handtype> playerHandtype;
     vector<strength> playerStrength;
     vector<int> playersWithBestHand;
-    int playerWinner = 0, playerCurrent = 0;
+    int playerWinner = 0;
+    int playerCurrent = 0;
     vector<int> playersWithTiedHand;
     int tiedHandCount = 0, tiedHandIsBest = 0;
     int stopEvaluating = 0;
@@ -838,8 +839,6 @@ int determineWinner(vector<vector<card>> playerHand)
             bestHandtype = playerHandtype[i];
         }
     }
-    //cout << endl << "The best ";
-    //PrintHandType(bestHandtype);
     
     // Determine which players have the best hand type
     for (i = 0; i < playerHand.size(); i++) {
@@ -850,6 +849,7 @@ int determineWinner(vector<vector<card>> playerHand)
     }
     // If only 1 player has the best hand type, that player wins the hand
     if (bestHandCount == 1) {
+        playerWinner = playersWithBestHand[0];
         cout << endl << endl << "Player " << playersWithBestHand[0]+1 << " is the winner!" << endl << endl;
     }
     // If 2 or more players have the best hand type, use the strength values to break the tie

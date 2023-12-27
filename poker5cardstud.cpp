@@ -9,7 +9,7 @@ Description:
 #include <cmath>
 using namespace std;
 
-#include "poker.h"
+#include "poker.hpp"
 
 const int PLAYER_CARD_COUNT = 5;
 const int PLAYER_CHIP_STACK = 1000;
