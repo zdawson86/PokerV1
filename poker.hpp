@@ -621,7 +621,7 @@ strength strengthFlush(vector<card> hand)
 // Find the strength of a hand with a full house
 strength strengthFullHouse(vector<card> hand)
 {
-    int i = 0, j = 0, threeOfKindTracker = 0;
+    int i = 0, j = 0, threeOfKindTracker = 0, pairTracker = 0;
     pips threeOfKindPips = acelow, threeOfKindPips2 = acelow, pairPips = acelow, pairPips2 = acelow;
     strength cardStrength;
     // Find the three of a kind pips value
@@ -658,14 +658,22 @@ strength strengthFullHouse(vector<card> hand)
     }
     // Find the pair pips value
     for (i = 0; i < hand.size(); i++) {
-        if (!(hand[i].p == threeOfKindPips)) {
-            pairPips = hand[i].p;
+        pairTracker = 0;
+        for (j = i+1; j < hand.size(); j++) {
+            if ((hand[i].p == hand[j].p) && (!(hand[i].p == threeOfKindPips))) {
+                pairPips = hand[i].p;
+                break;
+            }
         }
     }
+    pairTracker = 0;
     // Check to see if there's a second pair (possible for 7 card hands)
     for (i = 0; i < hand.size(); i++) {
-        if ((!(hand[i].p == threeOfKindPips)) && (!(hand[i].p == pairPips))) {
-            pairPips2 = hand[i].p;
+        pairTracker = 0;
+        for (j = i+1; j < hand.size(); j++) {
+            if ((hand[i].p == hand[j].p) && (!(hand[i].p == threeOfKindPips)) && (!(hand[i].p == pairPips))) {
+                pairPips2 = hand[i].p;
+            }
         }
     }
     // If the second pair is bigger than the first pair, replace the first pair with the second pair's pips value
@@ -812,26 +820,27 @@ strength findHandStrength(vector<card> hand, handtype ht)
 }
 
 // Determine who has the best hand out of all of the players
-int determineWinner(vector<vector<card>> playerHand)
+vector<int> determineWinner(vector<vector<card>> playerHand)
 {
-    int i = 0, j = 0, bestHandCount = 0;
+    int bestHandCount = 0;
     handtype bestHandtype = aceHighOrLess;
     vector<handtype> playerHandtype;
     vector<strength> playerStrength;
     vector<int> playersWithBestHand;
     int playerWinner = 0;
     int playerCurrent = 0;
+    vector<int> winnersOut;
     vector<int> playersWithTiedHand;
-    int tiedHandCount = 0, tiedHandIsBest = 0;
+    int tiedHandIsBest = 0;
     int stopEvaluating = 0;
 
     // Get the hand types and strengths for each player
-    for (i = 0; i < playerHand.size(); i++) {
+    for (int i = 0; i < playerHand.size(); i++) {
         playerHandtype.push_back(findHandType(playerHand[i]));
         playerStrength.push_back(findHandStrength(playerHand[i], playerHandtype[i]));
     }
     // Find the best hand type out of all the players
-    for (i = 0; i < playerHand.size(); i++) {
+    for (int i = 0; i < playerHand.size(); i++) {
         if (i == 0) {  // For starting off, set the first player's hand to be the best
             bestHandtype = playerHandtype[i];
         }
@@ -841,7 +850,7 @@ int determineWinner(vector<vector<card>> playerHand)
     }
     
     // Determine which players have the best hand type
-    for (i = 0; i < playerHand.size(); i++) {
+    for (int i = 0; i < playerHand.size(); i++) {
         if (playerHandtype[i] == bestHandtype) {
             playersWithBestHand.push_back(i);
             bestHandCount++;
@@ -850,11 +859,17 @@ int determineWinner(vector<vector<card>> playerHand)
     // If only 1 player has the best hand type, that player wins the hand
     if (bestHandCount == 1) {
         playerWinner = playersWithBestHand[0];
-        cout << endl << endl << "Player " << playersWithBestHand[0]+1 << " is the winner!" << endl << endl;
+        if (playerWinner == 0) {
+            cout << endl << endl << "You won the hand!" << endl << endl;
+        }
+        else {
+            cout << endl << endl << "Player " << playerWinner+1 << " won the hand!" << endl << endl;
+        }
+        winnersOut.push_back(playerWinner);
     }
     // If 2 or more players have the best hand type, use the strength values to break the tie
     else if (bestHandCount >= 2) {
-        for (i = 0; i < bestHandCount; i++) {
+        for (int i = 0; i < bestHandCount; i++) {
             if (i == 0) {  // For starting off, set the first player within the tie to be the winner
                 playerWinner = playersWithBestHand[i];
             }
@@ -863,20 +878,17 @@ int determineWinner(vector<vector<card>> playerHand)
                 if (playerStrength[playerCurrent].p1 > playerStrength[playerWinner].p1) {
                     playerWinner = playerCurrent;
                     tiedHandIsBest = 0;
-                    tiedHandCount = 0;
                 }
                 else if ((playerStrength[playerCurrent].p1 == playerStrength[playerWinner].p1)
                 && (playerStrength[playerCurrent].p2 > playerStrength[playerWinner].p2)) {
                     playerWinner = playerCurrent;
                     tiedHandIsBest = 0;
-                    tiedHandCount = 0;
                 }
                 else if ((playerStrength[playerCurrent].p1 == playerStrength[playerWinner].p1)
                 && (playerStrength[playerCurrent].p2 == playerStrength[playerWinner].p2)
                 && (playerStrength[playerCurrent].p3 > playerStrength[playerWinner].p3)) {
                     playerWinner = playerCurrent;
                     tiedHandIsBest = 0;
-                    tiedHandCount = 0;
                 }
                 else if ((playerStrength[playerCurrent].p1 == playerStrength[playerWinner].p1)
                 && (playerStrength[playerCurrent].p2 == playerStrength[playerWinner].p2)
@@ -884,7 +896,6 @@ int determineWinner(vector<vector<card>> playerHand)
                 && (playerStrength[playerCurrent].p4 > playerStrength[playerWinner].p4)) {
                     playerWinner = playerCurrent;
                     tiedHandIsBest = 0;
-                    tiedHandCount = 0;
                 }
                 else if ((playerStrength[playerCurrent].p1 == playerStrength[playerWinner].p1)
                 && (playerStrength[playerCurrent].p2 == playerStrength[playerWinner].p2)
@@ -893,7 +904,6 @@ int determineWinner(vector<vector<card>> playerHand)
                 && (playerStrength[playerCurrent].p5 > playerStrength[playerWinner].p5)) {
                     playerWinner = playerCurrent;
                     tiedHandIsBest = 0;
-                    tiedHandCount = 0;
                 }
                 // If 2 or more players have both the same hand type and strength values, they are tied and the hand ends
                 else if ((playerStrength[playerCurrent].p1 == playerStrength[playerWinner].p1)
@@ -901,15 +911,13 @@ int determineWinner(vector<vector<card>> playerHand)
                 && (playerStrength[playerCurrent].p3 == playerStrength[playerWinner].p3)
                 && (playerStrength[playerCurrent].p4 == playerStrength[playerWinner].p4)
                 && (playerStrength[playerCurrent].p5 == playerStrength[playerWinner].p5)) {
-                    if (tiedHandCount == 0) {
-                        playersWithTiedHand[0] == playerWinner;
-                        playersWithTiedHand[1] == playerCurrent;
-                        tiedHandCount += 2;
+                    if (playersWithTiedHand.size() == 0) {
+                        playersWithTiedHand.push_back(playerWinner);
+                        playersWithTiedHand.push_back(playerCurrent);
                         tiedHandIsBest = 1;
                     }
                     else {
-                        playersWithTiedHand[tiedHandCount] == playerCurrent;
-                        tiedHandCount++;
+                        playersWithTiedHand.push_back(playerCurrent);
                     }
                 }
                 stopEvaluating = 0;
@@ -917,58 +925,99 @@ int determineWinner(vector<vector<card>> playerHand)
         }
         // Print the winner after evaluating the strength values
         if (tiedHandIsBest == 0) {
-            cout << endl << endl << "Player " << playerWinner+1 << " is the winner!" << endl << endl;
+            if (playerWinner == 0) {
+                cout << endl << endl << "You won the hand!" << endl << endl;
+            }
+            else {
+                cout << endl << endl << "Player " << playerWinner+1 << " won the hand!" << endl << endl;
+            }
+            winnersOut.push_back(playerWinner);
         }
         // If there's still a tie after evaluating the strength values, print the players that are involved in the tie
+        // Return a negative value to represent how many players are tied (-2 = 2 players tied)
         else {
-            switch (tiedHandCount) {
+            switch (playersWithTiedHand.size()) {
                 case 2: 
-                    printf("\n\nPlayers %d and %d are tied!\n\n", 
-                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1);
+                    cout << endl << endl << "Players " << playersWithTiedHand[0]+1;
+                    cout << " and " << playersWithTiedHand[1]+1 << " are tied!" << endl << endl;
                     break;
                 case 3:
-                    printf("\n\nPlayers %d, %d, and %d are tied!\n\n", 
-                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1);
+                    cout << endl << endl << "Players " << playersWithTiedHand[0]+1;
+                    cout << ", " << playersWithTiedHand[1]+1;
+                    cout << ", and " << playersWithTiedHand[2]+1 << " are tied!" << endl << endl;
                     break;
                 case 4:
-                    printf("\n\nPlayers %d, %d, %d, and %d are tied!\n\n", 
-                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1);
+                    cout << endl << endl << "Players " << playersWithTiedHand[0]+1;
+                    cout << ", " << playersWithTiedHand[1]+1;
+                    cout << ", " << playersWithTiedHand[2]+1;
+                    cout << ", and " << playersWithTiedHand[3]+1 << " are tied!" << endl << endl;
                     break;
                 case 5:
-                    printf("\n\nPlayers %d, %d, %d, %d, and %d are tied!\n\n", 
-                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1);
+                    cout << endl << endl << "Players " << playersWithTiedHand[0]+1;
+                    cout << ", " << playersWithTiedHand[1]+1;
+                    cout << ", " << playersWithTiedHand[2]+1;
+                    cout << ", " << playersWithTiedHand[3]+1;
+                    cout << ", and " << playersWithTiedHand[4]+1 << " are tied!" << endl << endl;
                     break;
                 case 6:
-                    printf("\n\nPlayers %d, %d, %d, %d, %d, and %d are tied!\n\n", 
-                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
-                    playersWithTiedHand[5]+1);
+                    cout << endl << endl << "Players " << playersWithTiedHand[0]+1;
+                    cout << ", " << playersWithTiedHand[1]+1;
+                    cout << ", " << playersWithTiedHand[2]+1;
+                    cout << ", " << playersWithTiedHand[3]+1;
+                    cout << ", " << playersWithTiedHand[4]+1;
+                    cout << ", and " << playersWithTiedHand[5]+1 << " are tied!" << endl << endl;
                     break;
                 case 7:
-                    printf("\n\nPlayers %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
-                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
-                    playersWithTiedHand[5]+1, playersWithTiedHand[6]+1);
+                    cout << endl << endl << "Players " << playersWithTiedHand[0]+1;
+                    cout << ", " << playersWithTiedHand[1]+1;
+                    cout << ", " << playersWithTiedHand[2]+1;
+                    cout << ", " << playersWithTiedHand[3]+1;
+                    cout << ", " << playersWithTiedHand[4]+1;
+                    cout << ", " << playersWithTiedHand[5]+1;
+                    cout << ", and " << playersWithTiedHand[6]+1 << " are tied!" << endl << endl;
                     break;
                 case 8:
-                    printf("\n\nPlayers %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
-                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
-                    playersWithTiedHand[5]+1, playersWithTiedHand[6]+1, playersWithTiedHand[7]+1);
+                    cout << endl << endl << "Players " << playersWithTiedHand[0]+1;
+                    cout << ", " << playersWithTiedHand[1]+1;
+                    cout << ", " << playersWithTiedHand[2]+1;
+                    cout << ", " << playersWithTiedHand[3]+1;
+                    cout << ", " << playersWithTiedHand[4]+1;
+                    cout << ", " << playersWithTiedHand[5]+1;
+                    cout << ", " << playersWithTiedHand[6]+1;
+                    cout << ", and " << playersWithTiedHand[7]+1 << " are tied!" << endl << endl;
                     break;
                 case 9:
-                    printf("\n\nPlayers %d, %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
-                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
-                    playersWithTiedHand[5]+1, playersWithTiedHand[6]+1, playersWithTiedHand[7]+1, playersWithTiedHand[8]+1);
+                    cout << endl << endl << "Players " << playersWithTiedHand[0]+1;
+                    cout << ", " << playersWithTiedHand[1]+1;
+                    cout << ", " << playersWithTiedHand[2]+1;
+                    cout << ", " << playersWithTiedHand[3]+1;
+                    cout << ", " << playersWithTiedHand[4]+1;
+                    cout << ", " << playersWithTiedHand[5]+1;
+                    cout << ", " << playersWithTiedHand[6]+1;
+                    cout << ", " << playersWithTiedHand[7]+1;
+                    cout << ", and " << playersWithTiedHand[8]+1 << " are tied!" << endl << endl;
                     break;
                 case 10:
-                    printf("\n\nPlayers %d, %d, %d, %d, %d, %d, %d, %d, %d, and %d are tied!\n\n", 
-                    playersWithTiedHand[0]+1, playersWithTiedHand[1]+1, playersWithTiedHand[2]+1, playersWithTiedHand[3]+1, playersWithTiedHand[4]+1,
-                    playersWithTiedHand[5]+1, playersWithTiedHand[6]+1, playersWithTiedHand[7]+1, playersWithTiedHand[8]+1, playersWithTiedHand[9]+1);
+                    cout << endl << endl << "Players " << playersWithTiedHand[0]+1;
+                    cout << ", " << playersWithTiedHand[1]+1;
+                    cout << ", " << playersWithTiedHand[2]+1;
+                    cout << ", " << playersWithTiedHand[3]+1;
+                    cout << ", " << playersWithTiedHand[4]+1;
+                    cout << ", " << playersWithTiedHand[5]+1;
+                    cout << ", " << playersWithTiedHand[6]+1;
+                    cout << ", " << playersWithTiedHand[7]+1;
+                    cout << ", " << playersWithTiedHand[8]+1;
+                    cout << ", and " << playersWithTiedHand[9]+1 << " are tied!" << endl << endl;
                     break;
                 default: break;
+            }
+            for (int i = 0; i < playersWithTiedHand.size(); i++) {
+                winnersOut.push_back(playersWithTiedHand[i]);
             }
         }
     }
 
-    return playerWinner;
+    return winnersOut;
 }
 
 void printPokerHand(handtype ht, strength s) {
