@@ -11,25 +11,31 @@ using namespace std;
 
 #include "poker.hpp"
 
-//const int PLAYER_CARD_COUNT = 5;
-const int PLAYER_CHIP_STACK = 1000;
+const int CHIP_START_MIN = 10;
+const int CHIP_START_MAX = 100000;
 const int VALID = 1;
 const int NOT_VALID = 0;
 const int NORMAL_MODE = 0;
 const int TEST_MODE = 1;
 const int PLAYER_OUT_OF_GAME = -1;
 
-// Prompt the user for an action (check, bet, or fold)
-action getAction() {
+// Prompt the user for an action (check/call, bet/raise, or fold)
+action getAction(bool betActive) {
     int a;
     int userInput = NOT_VALID;
     while (userInput == NOT_VALID) {
-        cout << "'" << check <<"' to check, ";
-        cout << "'" << bet <<"' to bet, ";
+        if (!betActive) {
+            cout << "'" << checkCall <<"' to check, ";
+            cout << "'" << betRaise <<"' to bet, ";
+        }
+        else {
+            cout << "'" << checkCall <<"' to call, ";
+            cout << "'" << betRaise <<"' to raise, ";
+        }
         cout << "'" << fold <<"' to fold, ";
         cout << "'Ctrl+C' to exit game" << endl;
         cin >> a;
-        if ((a == check) || (a == bet) || (a == fold)) {
+        if ((a == checkCall) || (a == betRaise) || (a == fold)) {
             userInput = VALID;
         }
         else {
@@ -43,7 +49,7 @@ action getAction() {
 int main() {
     // SET "mode" TO "TEST_MODE" FOR TESTING CUSTOM HANDS (NOT RANDOM)
     // SET "mode" TO "NORMAL_MODE" FOR RUNNING A STANDARD GAME WITH RANDOMLY GENERATED HANDS
-    int mode = TEST_MODE;
+    int mode = NORMAL_MODE;
 
     vector<card> mainDeck;
     vector<vector<card>> playerHand;
@@ -52,20 +58,31 @@ int main() {
     vector<handtype> playerHandtype;
     vector<strength> playerStrength;
     array<vector<card>,2> cardStacks;
-    action currentAction = check;
+    action currentAction = checkCall;
     handtype currentHandType;
     strength currentStrength;
     vector<int> playerChips;
+    vector<int> foldedPlayers;
+    vector<int> allInPlayers;
     vector<int> winningPlayers;
+    computerAction compAct;
     int playerCount = 0;
     int maxPlayers = 0;
     int cardCount = 0;
+    int gameDifficulty = 0;
+    int chipsToStart = 0;
     int chipsToBet = 0;
+    int chipsToBetPrev = 0;
     int chipPot = 0;
     int round = 0;
     int playersWithChips = 0;
+    int turnTracker = 0;
+    int checkCallTracker = 0;
+    vector<int>::iterator findResult;
     int userInput = NOT_VALID;
-    int testvar = 0;
+    bool betIsActive = false;
+    bool bettingIsOver = false;
+    //int testvar = 0;
 
     cout << endl << "Welcome to Stud Poker!" << endl;
 
@@ -99,6 +116,32 @@ int main() {
             cout << endl << "NOT A VALID ENTRY!" << endl << endl;
         }
     }
+    userInput = NOT_VALID;
+
+    while (userInput == NOT_VALID) {
+        cout << endl << "How many chips for each player? (" << CHIP_START_MIN << " to " << CHIP_START_MAX << ")?" << endl;
+        cin >> chipsToStart;
+        if ((chipsToStart <= CHIP_START_MAX) && (chipsToStart >= CHIP_START_MIN)) {
+            userInput = VALID;
+        }
+        else {
+            cout << endl << "NOT A VALID ENTRY!" << endl << endl;
+        }
+    }
+    // cout << endl << "DEBUG chipsToStart = " << chipsToStart << endl;
+    userInput = NOT_VALID;
+
+    while (userInput == NOT_VALID) {
+        cout << endl << "What difficulty (0 to 10)?" << endl;
+        cin >> gameDifficulty;
+        if ((gameDifficulty <= 10) && (gameDifficulty >= 0)) {
+            userInput = VALID;
+        }
+        else {
+            cout << endl << "NOT A VALID ENTRY!" << endl << endl;
+        }
+    }
+    userInput = NOT_VALID;
 
     // Set up dummy hands and chip stacks for each player to initialize the game
     for (int i = 0; i < cardCount; i++) {
@@ -106,7 +149,8 @@ int main() {
     }
     for (int i = 0; i < playerCount; i++) {
         playerHand.push_back(dummyHand);
-        playerChips.push_back(PLAYER_CHIP_STACK);
+        playerChips.push_back(chipsToStart);
+        //cout << "DEBUG playerChips " << i << " = " << playerChips[i] << endl;
     }
 
     while(1) {
@@ -115,6 +159,7 @@ int main() {
 
         // TEST HANDS
         if (mode == TEST_MODE) {
+            cout << endl << "******************* TEST MODE IS ACTIVE!!! *********************" << endl;
             playerHand[0][0].p = eight, playerHand[0][0].s = club;
             playerHand[0][1].p = eight, playerHand[0][1].s = spade;
             playerHand[0][2].p = eight, playerHand[0][2].s = diamond;
@@ -163,6 +208,8 @@ int main() {
                     cardStacks = moveCard(mainDeck, playerHand[i], 0, cardCount);
                     playerHand[i] = cardStacks[1];
                     mainDeck = cardStacks[0];
+                    cout << endl << "DEBUG playerHand " << i << " = ";
+                    printDeck(playerHand[i], cardCount);
                 }
             }
         }
@@ -186,28 +233,122 @@ int main() {
         printPokerHand(currentHandType, currentStrength);
         cout << endl;
 
-        // Prompt the user for an action (check, bet, or fold)
-        currentAction = getAction();
+        /*** THE FOLLOWING CODE APPLIES TO DIFFICULTY LEVEL 0 (COMPUTER ALWAYS FOLLOWS THE MAIN PLAYER'S ACTION) ***/
+        if (gameDifficulty == 0) {
+            // Prompt the user for an action (check, bet, or fold)
+            currentAction = getAction(betIsActive);
 
-        // If user folds or checks, game continues and user will start the next hand
-        if ((currentAction == fold) || (currentAction == check)) {
-            continue;
+            // If user folds or checks, game continues and user will start the next hand
+            if ((currentAction == fold) || (currentAction == checkCall)) {
+                continue;
+            }
+            if (currentAction == betRaise) {
+                cout << endl << "How many chips?" << endl;
+                cin >> chipsToBet;
+                // Take away same number of chips from each player no matter what
+                // unless they don't have enough
+                for (int i = 0; i < playerChips.size(); i++) {
+                    if (playerChips[i] > PLAYER_OUT_OF_GAME) {
+                        if ((playerChips[i] - chipsToBet) <= 0) {
+                            chipPot += playerChips[i];
+                            playerChips[i] = 0;
+                        }
+                        else {
+                            chipPot += chipsToBet;
+                            playerChips[i] -= chipsToBet;
+                        }
+                    }
+                }
+            }
         }
-        if (currentAction == bet) {
-            cout << endl << "How many chips to bet?" << endl;
-            cin >> chipsToBet;
-            // Take away same number of chips from each player no matter what
-            // unless they don't have enough
-            for (int i = 0; i < playerChips.size(); i++) {
-                if (playerChips[i] > PLAYER_OUT_OF_GAME) {
-                    if ((playerChips[i] - chipsToBet) <= 0) {
-                        chipPot += playerChips[i];
-                        playerChips[i] = 0;
+        /*** THE FOLLOWING CODE APPLIES TO DIFFICULTY LEVELS 1+ (COMPUTER WILL MAKE ITS OWN DECISION) ***/
+        else {
+            // Loop through all player actions until the betting is over
+            while (!bettingIsOver) {
+                // If a player has already folded or is all in, count them towards the callCheckTracker
+                findResult = find(foldedPlayers.begin(), foldedPlayers.end(), turnTracker);
+                if (findResult != foldedPlayers.end()) {
+                    checkCallTracker++;
+                    continue;
+                }
+                findResult = find(allInPlayers.begin(), allInPlayers.end(), turnTracker);
+                if (findResult != allInPlayers.end()) {
+                    checkCallTracker++;
+                    continue;
+                }
+                // Prompt the user for an action (check/call, bet/raise, or fold)
+                if (turnTracker == 0) {
+                    currentAction = getAction(betIsActive);
+                }
+                else {
+                    compAct = calcCompAction(playerHand[turnTracker], playerChips[turnTracker], chipsToBet, gameDifficulty);
+                    currentAction = compAct.a;
+                }
+                
+                if (currentAction == checkCall) {
+                    checkCallTracker++;
+                    if (betIsActive) {
+                        if (playerChips[turnTracker] < chipsToBet) {
+                            chipPot += playerChips[turnTracker];
+                            playerChips[turnTracker] = 0;
+                        }
+                        else {
+                            chipPot += chipsToBet;
+                            playerChips[turnTracker] -= chipsToBet;
+                        }
                     }
-                    else {
+                }
+                else if (currentAction == betRaise) {
+                    betIsActive = true;
+                    checkCallTracker = 0;
+                    chipsToBetPrev = chipsToBet;
+
+                    // If player has more chips than what's being bet so far
+                    if (playerChips[turnTracker] > chipsToBet) {
+                        if (turnTracker == 0) {
+                            while (userInput == NOT_VALID) {
+                                cout << endl << "How many chips? Must be at least " << chipsToBetPrev;
+                                cout << " and less than " << playerChips[0];
+                                cin >> chipsToBet;
+                                if (chipsToBet <= chipsToBetPrev) {
+                                    userInput = VALID;
+                                }
+                                else {
+                                    cout << endl << "NOT A VALID ENTRY!" << endl << endl;
+                                }
+                            }
+                            userInput = NOT_VALID;
+                        }
+                        else {
+                            chipsToBet = compAct.betSize;
+                        }
                         chipPot += chipsToBet;
-                        playerChips[i] -= chipsToBet;
+                        playerChips[turnTracker] -= chipsToBet;
                     }
+                    // Otherwise, player has to go "all in" with their chips
+                    else {
+                        chipPot += playerChips[turnTracker];
+                        playerChips[turnTracker] = 0;
+                        allInPlayers.push_back(turnTracker);
+                    }
+                }
+                else {  // currentAction == fold
+                    foldedPlayers.push_back(turnTracker);
+                    checkCallTracker++;
+                }
+
+                // If all players have checked, finish the betting round
+                // Also, if player(s) have bet and all other players call/fold, finish the betting round
+                if ((!betIsActive) && (checkCallTracker == playerCount)) {
+                    bettingIsOver = true;
+                }
+                else if (betIsActive && (checkCallTracker == (playerCount - 1))) {
+                    bettingIsOver = true;
+                }
+                
+                turnTracker++;
+                if (turnTracker == playerCount) {
+                    turnTracker = 0;
                 }
             }
         }
