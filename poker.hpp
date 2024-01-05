@@ -1653,7 +1653,7 @@ computerAction calcCompAction(vector<card> hand, int chipStack, int betSize, int
 
     // Calculate the ratio between the current bet size and the player's chip size
     if (chipStack > 0) {
-        chipRatio = betSize / chipStack;
+        chipRatio = (float)betSize / (float)chipStack;
     }
     else {
         chipRatio = betSize;
@@ -1666,21 +1666,87 @@ computerAction calcCompAction(vector<card> hand, int chipStack, int betSize, int
 
     /* Game difficulty 1 behavior
     chipRatio = 0%
-        check for all hands
-    chipRatio = >0%
+        check if handtype is single pair or less
+        bet 10% of chipStack if two pair
+        bet 20% of chipStack if three of kind
+        go all in if higher than three of kind
+    chipRatio = 0% to 20%
         fold if handtype is ace high or less
+        call if single pair
+        raise 10% of betSize if two pair
+        raise 30% of betSize if three of kind
+        go all in if higher than three of kind
+    chipRatio = 20% to 50%
+        fold if handtype is single pair or less
+        call if two pair
+        raise 20% of betSize if three of kind
+        go all in if higher than three of kind
+    chipRatio = 50% to 100%
+        fold if handtype is two pair or less
         call for all other handtypes
     */
     switch (gameDiff) {
         case 1:
             if (chipRatio == 0) {
-                ca.a = checkCall;
+                if (ht <= singlePair) {
+                    ca.a = checkCall;
+                }
+                else if (ht == twoPair) {
+                    ca.a = betRaise;
+                    ca.betSize = 0.1 * (float)chipStack;
+                }
+                else if (ht == threeOfKind) {
+                    ca.a = betRaise;
+                    ca.betSize = chipStack + (0.2 * (float)chipStack);
+                }
+                else {  // GO ALL IN
+                    ca.a = betRaise;
+                    ca.betSize = chipStack;
+                }
             }
-            else if (ht == aceHighOrLess) {
-                ca.a = fold;
+            else if ((chipRatio > 0) && (chipRatio <= 0.2)) {
+                if (ht == aceHighOrLess) {
+                    ca.a = fold;
+                }
+                else if (ht == singlePair) {
+                    ca.a = checkCall;
+                }
+                else if (ht == twoPair) {
+                    ca.a = betRaise;
+                    ca.betSize = 0.1 * (float)betSize;
+                }
+                else if (ht == threeOfKind) {
+                    ca.a = betRaise;
+                    ca.betSize = 0.3 * (float)betSize;
+                }
+                else {  // GO ALL IN
+                    ca.a = betRaise;
+                    ca.betSize = chipStack;
+                }
+            }
+            else if ((chipRatio > 0.2) && (chipRatio <= 0.5)) {
+                if (ht <= singlePair) {
+                    ca.a = fold;
+                }
+                else if (ht == twoPair) {
+                    ca.a = checkCall;
+                }
+                else if (ht == threeOfKind) {
+                    ca.a = betRaise;
+                    ca.betSize = 0.2 * (float)betSize;
+                }
+                else {  // GO ALL IN
+                    ca.a = betRaise;
+                    ca.betSize = chipStack;
+                }
             }
             else {
-                ca.a = checkCall;
+                if (ht <= twoPair) {
+                    ca.a = fold;
+                }
+                else {
+                    ca.a = checkCall;
+                }
             }
             break;
         default: break;

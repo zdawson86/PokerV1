@@ -2,6 +2,10 @@
 Description:
 Stud poker game against computer players.
 
+TO DO:
+- Fix the bet/raise chip values
+- Show pot size after each player's turn if there'a a bet/call/raise action
+
 */
 
 #include <iostream>
@@ -132,9 +136,9 @@ int main() {
     userInput = NOT_VALID;
 
     while (userInput == NOT_VALID) {
-        cout << endl << "What difficulty (0 to 10)?" << endl;
+        cout << endl << "What difficulty (0 to 1)?" << endl;
         cin >> gameDifficulty;
-        if ((gameDifficulty <= 10) && (gameDifficulty >= 0)) {
+        if ((gameDifficulty <= 1) && (gameDifficulty >= 0)) {
             userInput = VALID;
         }
         else {
@@ -208,8 +212,8 @@ int main() {
                     cardStacks = moveCard(mainDeck, playerHand[i], 0, cardCount);
                     playerHand[i] = cardStacks[1];
                     mainDeck = cardStacks[0];
-                    cout << endl << "DEBUG playerHand " << i << " = ";
-                    printDeck(playerHand[i], cardCount);
+                    //cout << endl << "DEBUG playerHand " << i << " = ";
+                    //printDeck(playerHand[i], cardCount);
                 }
             }
         }
@@ -269,11 +273,13 @@ int main() {
                 findResult = find(foldedPlayers.begin(), foldedPlayers.end(), turnTracker);
                 if (findResult != foldedPlayers.end()) {
                     checkCallTracker++;
+                    turnTracker++;
                     continue;
                 }
                 findResult = find(allInPlayers.begin(), allInPlayers.end(), turnTracker);
                 if (findResult != allInPlayers.end()) {
                     checkCallTracker++;
+                    turnTracker++;
                     continue;
                 }
                 // Prompt the user for an action (check/call, bet/raise, or fold)
@@ -296,6 +302,10 @@ int main() {
                             chipPot += chipsToBet;
                             playerChips[turnTracker] -= chipsToBet;
                         }
+                        cout << "Player " << turnTracker+1 << " is calling" << endl;
+                    }
+                    else {
+                        cout << "Player " << turnTracker+1 << " is checking" << endl;
                     }
                 }
                 else if (currentAction == betRaise) {
@@ -308,9 +318,9 @@ int main() {
                         if (turnTracker == 0) {
                             while (userInput == NOT_VALID) {
                                 cout << endl << "How many chips? Must be at least " << chipsToBetPrev;
-                                cout << " and less than " << playerChips[0];
+                                cout << " and less than " << playerChips[0] << endl;
                                 cin >> chipsToBet;
-                                if (chipsToBet <= chipsToBetPrev) {
+                                if ((chipsToBet >= chipsToBetPrev) && (chipsToBet <= playerChips[0])) {
                                     userInput = VALID;
                                 }
                                 else {
@@ -321,6 +331,7 @@ int main() {
                         }
                         else {
                             chipsToBet = compAct.betSize;
+                            cout << "Player " << turnTracker+1 << " bet/raise size = " << chipsToBet << endl;
                         }
                         chipPot += chipsToBet;
                         playerChips[turnTracker] -= chipsToBet;
@@ -330,19 +341,21 @@ int main() {
                         chipPot += playerChips[turnTracker];
                         playerChips[turnTracker] = 0;
                         allInPlayers.push_back(turnTracker);
+                        cout << "Player " << turnTracker+1 << " is all in!" << endl;
                     }
                 }
                 else {  // currentAction == fold
                     foldedPlayers.push_back(turnTracker);
                     checkCallTracker++;
+                    cout << "Player " << turnTracker+1 << " is folding" << endl;
                 }
 
                 // If all players have checked, finish the betting round
                 // Also, if player(s) have bet and all other players call/fold, finish the betting round
-                if ((!betIsActive) && (checkCallTracker == playerCount)) {
+                if ((!betIsActive) && (checkCallTracker >= playerCount)) {
                     bettingIsOver = true;
                 }
-                else if (betIsActive && (checkCallTracker == (playerCount - 1))) {
+                else if (betIsActive && (checkCallTracker >= (playerCount - 1))) {
                     bettingIsOver = true;
                 }
                 
@@ -351,6 +364,13 @@ int main() {
                     turnTracker = 0;
                 }
             }
+            foldedPlayers.clear();
+            allInPlayers.clear();
+            chipsToBet = 0;
+            turnTracker = 0;
+            checkCallTracker = 0;
+            betIsActive = false;
+            bettingIsOver = false;
         }
 
         // Print the hands for all the players still in the game
